@@ -285,7 +285,7 @@ function openHouse(id, push) {
       '<ul class="feat">' + h.features.map(f => '<li>' + esc(f).replace(/ м²/g, '\u00a0м²') + '</li>').join('') + '</ul>' +
       '<div class="txt">' + h.text.map(t => '<p>' + esc(t) + '</p>').join('') + '</div>' +
       '<div class="pk" id="h-pk">' + pk.map((p, i) => '<label><input type="radio" name="hpk" value="' + i + '"' + (i ? '' : ' checked') + '><span class="nm"><b>' + p.name + '</b><small>' + p.short + '</small></span><span class="pp">от ' + rub(h.price[i]) + '</span></label>').join('') + '</div>' +
-      '<div class="days">Срок строительства: <b>' + S.buildTerm + '</b>. Оплата в четыре этапа: 20% / 40% / 20% / 20%</div>' +
+      '<div class="days">Срок строительства: <b>' + S.buildTerm + '</b>. Оплата поэтапная, в соответствии с графиком строительства</div>' +
       '<div class="row"><button class="btn" id="h-lead"><span class="dot"></span>Получить смету</button><button class="btn line" id="h-calc">Рассчитать с ипотекой</button></div>' +
     '</div>';
   // галерея
@@ -469,43 +469,47 @@ $('#c-tomort').addEventListener('click', () => { M.sum = Math.min(+mSum.max, cal
 /* ==========================================================
    ИПОТЕКА
    ========================================================== */
-const mProg = $('#m-prog'), mSum = $('#m-sum'), mDown = $('#m-down'), mYears = $('#m-years');
+const mProg = $('#m-prog'), mSum = $('#m-sum'), mDown = $('#m-down'), mYears = $('#m-years'), mRate = $('#m-rate-r');
 mProg.innerHTML = S.mortgage.map((m, i) => '<label><input type="radio" name="mpg" value="' + i + '"' + (i ? '' : ' checked') + '><span><b>' + m.name + '</b><small>от ' + String(m.rate).replace('.', ',') + '%</small></span></label>').join('');
 mSum.value = calcPrice || 3000000; mDown.value = 20; mYears.value = 20;
 const fill = el => el.style.setProperty('--p', ((el.value - el.min) / (el.max - el.min) * 100) + '%');
 /* значения можно менять ползунком или вписать цифрами вручную */
-const M = { sum: +mSum.value, dp: +mDown.value, y: +mYears.value };
-const mSumO = $('#m-sum-o'), mDownO = $('#m-down-o'), mYearsO = $('#m-years-o');
+const M = { sum: +mSum.value, dp: +mDown.value, y: +mYears.value, rate: S.mortgage[0].rate };
+const mSumO = $('#m-sum-o'), mDownO = $('#m-down-o'), mYearsO = $('#m-years-o'), mRateO = $('#m-rate-o');
+const pct = v => String(Math.round(v * 100) / 100).replace('.', ',');
 const grp = n => Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ');
 const digits = v => +String(v).replace(/[^0-9]/g, '') || 0;
 function mort() {
   const pr = S.mortgage[+$('input[name=mpg]:checked').value];
   mDown.min = pr.minDown; if (M.dp < pr.minDown) M.dp = pr.minDown;
-  mSum.value = M.sum; mDown.value = M.dp; mYears.value = M.y;
+  mSum.value = M.sum; mDown.value = M.dp; mYears.value = M.y; mRate.value = M.rate;
   const sum = M.sum, dp = M.dp, y = M.y;
-  const loan = sum * (1 - dp / 100), n = y * 12, r = pr.rate / 1200;
+  const loan = sum * (1 - dp / 100), n = y * 12, r = M.rate / 1200;
   const pay = r ? loan * r / (1 - Math.pow(1 + r, -n)) : loan / n;
   if (document.activeElement !== mSumO) mSumO.value = grp(sum);
   if (document.activeElement !== mDownO) mDownO.value = grp(sum * dp / 100);
   if (document.activeElement !== mYearsO) mYearsO.value = y;
+  if (document.activeElement !== mRateO) mRateO.value = pct(M.rate);
   $('#m-down-p').textContent = '· ' + String(Math.round(dp * 10) / 10).replace('.', ',') + '%';
   $('#m-years-u').textContent = plural(y, 'год', 'года', 'лет');
   $('#m-pay').textContent = rub(pay);
   $('#m-loan').textContent = rub(loan);
-  $('#m-rate').textContent = String(pr.rate).replace('.', ',') + '%';
+  $('#m-rate').textContent = pct(M.rate) + '%';
   $('#m-over').textContent = rub(Math.max(0, pay * n - loan));
-  [mSum, mDown, mYears].forEach(fill);
+  [mSum, mDown, mYears, mRate].forEach(fill);
 }
 mSum.addEventListener('input', () => { M.sum = +mSum.value; mort(); });
 mDown.addEventListener('input', () => { M.dp = +mDown.value; mort(); });
 mYears.addEventListener('input', () => { M.y = +mYears.value; mort(); });
+mRate.addEventListener('input', () => { M.rate = +mRate.value; mort(); });
 const lim = (v, a, b) => Math.min(b, Math.max(a, v));
 const typed = (inp, apply) => {
   let fresh = false;
   inp.addEventListener('focus', () => { inp.value = String(inp.value).replace(/\s/g, ''); inp.select(); fresh = true; });
   inp.addEventListener('mouseup', e => { if (fresh) { e.preventDefault(); inp.select(); fresh = false; } });
-  inp.addEventListener('input', () => { inp.value = inp.value.replace(/[^0-9]/g, ''); });
-  const commit = () => { if (inp.value !== '') apply(digits(inp.value)); inp.blur(); mort(); };
+  const dec = inp.classList.contains('rt');
+  inp.addEventListener('input', () => { inp.value = dec ? inp.value.replace(/[^0-9.,]/g, '') : inp.value.replace(/[^0-9]/g, ''); });
+  const commit = () => { if (inp.value !== '') apply(dec ? (parseFloat(inp.value.replace(',', '.')) || 0) : digits(inp.value)); inp.blur(); mort(); };
   inp.addEventListener('change', commit);
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
   inp.addEventListener('blur', () => mort());
@@ -513,11 +517,12 @@ const typed = (inp, apply) => {
 typed(mSumO, v => { M.sum = lim(v, +mSum.min, +mSum.max); });
 typed(mDownO, v => { const pr = S.mortgage[+$('input[name=mpg]:checked').value]; M.dp = lim(v / M.sum * 100, pr.minDown, 90); });
 typed(mYearsO, v => { M.y = lim(v, 1, 30); });
-mProg.addEventListener('change', mort);
+typed(mRateO, v => { M.rate = lim(Math.round(v * 100) / 100, 0, 50); });
+mProg.addEventListener('change', () => { M.rate = S.mortgage[+$('input[name=mpg]:checked').value].rate; mort(); });
 mort();
 $('#m-lead').addEventListener('click', () => {
   const pr = S.mortgage[+$('input[name=mpg]:checked').value];
-  openLead('Ипотека: ' + pr.name + ', дом ' + rub(+mSum.value) + ', взнос ' + mDown.value + '%, ' + mYears.value + ' лет', 'Подобрать ипотеку', 'Расскажем о подходящих программах и посчитаем платёж точно.');
+  openLead('Ипотека: ' + pr.name + ', ставка ' + pct(M.rate) + '%, дом ' + rub(+mSum.value) + ', взнос ' + mDown.value + '%, ' + mYears.value + ' лет', 'Подобрать ипотеку', 'Расскажем о подходящих программах и посчитаем платёж точно.');
 });
 
 /* ==========================================================

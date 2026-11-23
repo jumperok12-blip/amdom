@@ -350,6 +350,7 @@ select{width:100%;appearance:none;-webkit-appearance:none;padding:16px 44px 16px
 .rng .num em{font-style:normal;color:var(--muted);font-size:18px}
 .ninp{font:inherit;color:inherit;width:9.2ch;text-align:right;border:0;border-bottom:1.5px dashed rgba(59,42,31,.35);background:transparent;padding:0 2px 1px;border-radius:0;outline:none;transition:border-color .2s,background .2s}
 .ninp.sm{width:3ch}
+.ninp.rt{width:4.2ch}
 .ninp:hover{border-bottom-color:var(--green)}
 .ninp:focus{border-bottom:1.5px solid var(--green);background:rgba(94,158,75,.08)}
 input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--green) var(--p,50%),#e6ddd0 var(--p,50%));outline:none}
