@@ -378,12 +378,19 @@ pcards.innerHTML = S.packages.map((p, i) => {
     '<p class="ptext">' + esc(c.text) + '</p>' +
     '<div class="pwho"><b>Кому подходит:</b> ' + esc(c.who) + '</div>' +
     '<div class="pprice">от ' + rub(p.perM2) + ' <small>за м²</small></div>' +
-    '<div class="pin">Что входит в комплектацию:</div>' +
-    '<ul class="pitems">' + c.items.map(t => '<li>' + CHK + '<span>' + esc(t) + '</span></li>').join('') + '</ul>' +
+    '<button class="ptog" aria-expanded="false">Что входит в комплектацию <i>' + c.items.length + '</i><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>' +
+    '<div class="pmore"><div class="pmi"><div class="pin">Что входит в комплектацию:</div>' +
+    '<ul class="pitems">' + c.items.map(t => '<li>' + CHK + '<span>' + esc(t) + '</span></li>').join('') + '</ul></div></div>' +
     '<div class="pres"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M6.5 10.2l2.3 2.2 4.7-4.7"/></svg><span>' + esc(c.foot) + '</span></div>' +
     '<button class="btn' + (c.hit ? '' : ' ghost') + ' pbtn" data-lead="Комплектация: ' + p.name + '">Выбрать ' + acc(p.name).toLowerCase() + ' <span aria-hidden="true">→</span></button>' +
     '</article>';
 }).join('');
+pcards.addEventListener('click', e => {
+  const t = e.target.closest('.ptog'); if (!t) return;
+  const card = t.closest('.pcard'), open = !card.classList.contains('open');
+  $$('.pcard', pcards).forEach(c => { c.classList.remove('open'); $('.ptog', c).setAttribute('aria-expanded', 'false'); });
+  if (open) { card.classList.add('open'); t.setAttribute('aria-expanded', 'true'); }
+});
 
 /* ==========================================================
    ТЕХНОЛОГИЯ: разрез стены

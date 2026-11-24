@@ -684,3 +684,26 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .pcard.hit .pbtn:hover{background:#d3b385}
 .pcard .pbtn.ghost{border-color:var(--kofe);color:var(--kofe)}
 .pcard .pbtn.ghost:hover{background:var(--kofe);color:var(--slivki)}
+
+/* Комплектации: на телефоне список «Что входит» свёрнут в аккордеон */
+.ptog{display:none}
+.pmore{display:flex;flex-direction:column;flex:1}.pmi{display:flex;flex-direction:column;flex:1}
+@media (max-width:1000px){
+  .pcards{gap:26px}
+  .pcard{padding:24px 20px 20px}
+  .ptext{display:none}
+  .pwho{margin-top:12px}
+  .pprice{margin-top:16px;font-size:24px}
+  .ptog{display:flex;align-items:center;gap:10px;width:100%;margin-top:18px;padding:14px 16px;border-radius:12px;background:#fff;border:1.5px solid var(--line);font:inherit;font-weight:600;font-size:15px;color:var(--kofe);cursor:pointer;text-align:left;transition:border-color .2s,background .2s}
+  .ptog i{font-style:normal;font-size:12px;font-weight:700;background:var(--slivki);color:var(--oreh);border-radius:99px;padding:2px 9px;margin-right:auto}
+  .ptog svg{width:18px;height:18px;fill:none;stroke:var(--kofe);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s}
+  .pcard.open .ptog{border-color:var(--kofe)}
+  .pcard.open .ptog svg{transform:rotate(180deg)}
+  .pcard.hit .ptog{border-color:var(--brus)}
+  .pmore{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
+  .pmi{overflow:hidden;min-height:0}
+  .pcard.open .pmore{grid-template-rows:1fr}
+  .pmore .pin{display:none}
+  .pmore .pitems{margin-top:16px}
+  .pres{margin-top:18px;padding-top:16px}
+}
