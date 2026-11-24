@@ -367,24 +367,23 @@ addEventListener('popstate', () => {
 /* ==========================================================
    КОМПЛЕКТАЦИИ
    ========================================================== */
-const PI = S.packageItems, ptabs = $('#ptabs'), pbody = $('#pbody');
-const minPrice = i => Math.min.apply(null, H.map(h => h.price[i]));
-ptabs.innerHTML = S.packages.map((p, i) => '<button class="ptab' + (i ? '' : ' on') + '" role="tab" data-i="' + i + '"><div class="n">0' + (i + 1) + '</div><h3>' + p.name + '</h3><p>' + p.short + '</p><div class="from">от ' + mln(minPrice(i)) + '</div></button>').join('');
-const listHTML = arr => '<div class="plist">' + arr.map(r => '<div><b>' + esc(r[0]) + '</b><span>' + esc(r[1]) + '</span></div>').join('') + '</div>';
-function renderPack(i) {
-  const id = S.packages[i].id;
-  let html = '';
-  if (i === 0) html = listHTML(PI.base);
-  else {
-    html = '<div class="plus">＋ Всё из «' + S.packages[i - 1].name + '» и дополнительно:</div>' + listHTML(PI[id]);
-    html += '<details class="pall"><summary>Что входит во все комплектации</summary>' + listHTML(PI.base) + (i === 2 ? '<div class="plus" style="margin-top:18px">Из предчистовой:</div>' + listHTML(PI.pre) : '') + '</details>';
-  }
-  html += '<div class="pfoot"><p>Во всех комплектациях: пиломатериал камерной сушки, технадзор и промежуточные акты на каждом этапе, бесплатная перепланировка, гарантия 5 лет.</p>' +
-    '<button class="btn" data-lead="Комплектация: ' + S.packages[i].name + '"><span class="dot"></span>Узнать цену на свой дом</button></div>';
-  pbody.innerHTML = html;
-}
-ptabs.addEventListener('click', e => { const b = e.target.closest('.ptab'); if (!b) return; $$('.ptab', ptabs).forEach(x => x.classList.toggle('on', x === b)); renderPack(+b.dataset.i); });
-renderPack(0);
+const pcards = $('#pcards');
+const CHK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
+const acc = n => n.replace(/ая$/, 'ую');
+pcards.innerHTML = S.packages.map((p, i) => {
+  const c = S.packageCards[i];
+  return '<article class="pcard' + (c.hit ? ' hit' : '') + '">' + (c.hit ? '<div class="pbadge">' + esc(c.badge) + '</div>' : '') +
+    '<div class="ptop"><span class="pn">0' + (i + 1) + '</span><span class="ptag">' + esc(c.tag) + '</span></div>' +
+    '<h3>' + p.name + '</h3><div class="psub">' + esc(c.sub) + '</div>' +
+    '<p class="ptext">' + esc(c.text) + '</p>' +
+    '<div class="pwho"><b>Кому подходит:</b> ' + esc(c.who) + '</div>' +
+    '<div class="pprice">от ' + rub(p.perM2) + ' <small>за м²</small></div>' +
+    '<div class="pin">Что входит в комплектацию:</div>' +
+    '<ul class="pitems">' + c.items.map(t => '<li>' + CHK + '<span>' + esc(t) + '</span></li>').join('') + '</ul>' +
+    '<div class="pres"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M6.5 10.2l2.3 2.2 4.7-4.7"/></svg><span>' + esc(c.foot) + '</span></div>' +
+    '<button class="btn' + (c.hit ? '' : ' ghost') + ' pbtn" data-lead="Комплектация: ' + p.name + '">Выбрать ' + acc(p.name).toLowerCase() + ' <span aria-hidden="true">→</span></button>' +
+    '</article>';
+}).join('');
 
 /* ==========================================================
    ТЕХНОЛОГИЯ: разрез стены
@@ -450,7 +449,7 @@ let calcPrice = 0;
 function calc() {
   const h = byId(cHouse.value), pi = +$('input[name=cpk]:checked').value, fi = +$('input[name=cfd]:checked').value;
   const f = S.foundations[fi];
-  calcPrice = Math.round(h.price[pi] * (1 + f.extra / 100) / 10000) * 10000;
+  calcPrice = Math.round(h.price[pi] * (1 + f.extra / 100) / 1000) * 1000;
   const im = $('#c-img'); const src = img(h, 'thumb'); if (im.getAttribute('src') !== src) im.src = src; im.alt = h.name;
   $('#c-name').textContent = h.name + ' · ' + S.packages[pi].name + ' · ' + f.name.toLowerCase();
   $('#c-price').textContent = 'от ' + rub(calcPrice);
