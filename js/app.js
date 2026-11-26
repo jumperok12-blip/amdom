@@ -377,7 +377,6 @@ pcards.innerHTML = S.packages.map((p, i) => {
     '<h3>' + p.name + '</h3><div class="psub">' + esc(c.sub) + '</div>' +
     '<p class="ptext">' + esc(c.text) + '</p>' +
     '<div class="pwho"><b>Кому подходит:</b> ' + esc(c.who) + '</div>' +
-    '<div class="pprice">от ' + rub(p.perM2) + ' <small>за м²</small></div>' +
     '<button class="ptog" aria-expanded="false">Что входит в комплектацию <i>' + c.items.length + '</i><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>' +
     '<div class="pmore"><div class="pmi"><div class="pin">Что входит в комплектацию:</div>' +
     '<ul class="pitems">' + c.items.map(t => '<li>' + CHK + '<span>' + esc(t) + '</span></li>').join('') + '</ul></div></div>' +
