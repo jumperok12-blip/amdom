@@ -28,6 +28,9 @@ $$('[data-avito]').forEach(a => { if (C.avito) { a.href = C.avito; a.hidden = fa
 $$('[data-legal]').forEach(e => e.textContent = S.legal.name);
 $$('[data-inn]').forEach(e => e.textContent = S.legal.inn);
 $$('[data-maplink]').forEach(a => { a.href = C.mapUrl; });
+/* формы выключены (S.forms.off): вместо полей показываем кнопки связи из блока «Контакты» */
+const MSG = ($('#contacts .msg') || {}).outerHTML || '';
+const reachHTML = (title, sub) => '<div class="reach">' + (title ? '<h3>' + esc(title) + '</h3>' : '') + '<p class="muted">' + esc(sub || 'Позвоните или напишите нам, ответим на вопросы и посчитаем смету.') + '</p>' + MSG + '</div>';
 $$('[data-hours]').forEach(e => { e.innerHTML = (S.hours || []).map(t => '<div>' + esc(t) + '</div>').join(''); });
 /* карта грузится, только когда до неё долистали: так сайт открывается быстрее */
 (function map() {
@@ -574,7 +577,7 @@ function qRender() {
       '<div class="qnav"><button class="qback"' + (qi ? '' : ' disabled') + '>← Назад</button><span class="muted">Выберите вариант</span></div>';
     $$('.qopt', qmain).forEach(b => b.addEventListener('click', () => { QA[qi] = b.dataset.v; $$('.qopt', qmain).forEach(x => x.classList.toggle('on', x === b)); setTimeout(() => { qi++; qRender(); }, 220); }));
   } else {
-    $('#qstep').textContent = 'Готово! Осталось оставить контакты';
+    $('#qstep').textContent = S.forms.off ? 'Готово! Вот что подходит' : 'Готово! Осталось оставить контакты';
     const pick = qPick(), top = pick.list;
     const answers = Q.map((q, i) => q[0] + ' ' + ((q[1].find(o => o[0] === QA[i]) || [, ''])[1])).join('; ');
     qmain.innerHTML = '<h3>' + (pick.exact ? (top.length === 1 ? 'Вам подойдёт этот проект' : 'Вам подойдут эти проекты') : 'Точного совпадения нет, вот самые близкие проекты') + '</h3>' + (pick.exact ? '' : '<p class="muted qnote">Любой из них можем доработать под ваши пожелания.</p>') + '<div class="qres">' + top.map(h => '<a data-id="' + h.id + '"><img src="' + img(h, 'thumb') + '" alt=""><span>' + h.name + '<small>' + h.area + ' м² · от ' + mln(h.price[0]) + '</small></span></a>').join('') + '</div>' +
@@ -585,7 +588,8 @@ function qRender() {
       '<label class="agree"><input type="checkbox" name="agree" required><span>Согласен на обработку персональных данных и с <a href="policy.html" target="_blank">политикой конфиденциальности</a></span></label>' +
       '<div class="qnav"><button type="button" class="qback">← Назад</button><button class="btn" type="submit"><span class="dot"></span>Получить подборку</button></div></form>';
     $$('.qres a', qmain).forEach(a => a.addEventListener('click', () => openHouse(a.dataset.id, true)));
-    initForm($('form', qmain));
+    if (S.forms.off) { const qf = $('form', qmain); qf.outerHTML = reachHTML('', 'Позвоните или напишите нам, пришлём подборку со сметами и ответим на вопросы.') + '<div class="qnav"><button type="button" class="qback">← Назад</button></div>'; }
+    else initForm($('form', qmain));
   }
   const bk = $('.qback', qmain); bk && bk.addEventListener('click', () => { if (qi > 0) { qi--; qRender(); } });
 }
@@ -628,6 +632,11 @@ if (S.stats && S.stats.length) {
 const lmodal = $('#lmodal'), lform = $('#lform');
 const lformHTML = lform.innerHTML;
 function openLead(topic, title, sub) {
+  if (S.forms.off) {
+    const t = (sub || '').replace(/Оставьте телефон[,.]?\s*/, '').replace(/^./, c => c.toUpperCase());
+    lform.innerHTML = reachHTML(!title || title === 'Оставьте заявку' ? 'Свяжитесь с нами' : title, (t ? t + ' ' : '') + 'Позвоните или напишите нам, менеджер ответит и всё посчитает.');
+    showModal(lmodal); return;
+  }
   lform.innerHTML = lformHTML; delete lform.dataset.ready;
   lform.dataset.topic = topic || 'Заявка с сайта';
   $('#l-title', lform).textContent = title || 'Оставьте заявку';
@@ -685,7 +694,12 @@ function initForm(f) {
       .catch(() => { btn.disabled = false; toast('Не получилось отправить. Позвоните нам: ' + C.phone); });
   });
 }
-$$('form[data-form]').forEach(initForm);
+if (S.forms.off) {
+  const cf = $('#contacts form[data-form]'); if (cf) cf.remove();
+  const h = $('#contacts .h2b'); if (h) h.textContent = 'Позвоните или напишите';
+  $('#contacts').classList.add('noform');
+}
+else $$('form[data-form]').forEach(initForm);
 
 /* ---------- появление блоков ---------- */
 const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' }) : null;
