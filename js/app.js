@@ -719,6 +719,12 @@ $('#cookie-ok').addEventListener('click', () => { lsSet('amdom-cookie', '1'); $(
 if (S.metrikaId) {
   (function (m, e, t, r, i, k, a) { m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); }; m[i].l = 1 * new Date(); k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a); })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
   ym(S.metrikaId, 'init', { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: true });
+  /* цели: нажатия «Позвонить» и кнопок мессенджеров */
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="tel:"], [data-tg], [data-max], [data-vk]'); if (!a) return;
+    const g = a.matches('a[href^="tel:"]') ? 'call' : a.matches('[data-tg]') ? 'telegram' : a.matches('[data-max]') ? 'max' : 'vk';
+    try { ym(S.metrikaId, 'reachGoal', g); ym(S.metrikaId, 'reachGoal', 'contact'); } catch (er) {}
+  });
 }
 
 /* ---------- открыть дом по ссылке вида сайт/#house-prostor ---------- */
